@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "managed" {
-  bucket = "tos-managed-p15-e2e-346589946607-0730a4"
+  bucket = "tos-managed-p15-e2e-346589946607-0730a5"
 
   lifecycle {
     prevent_destroy = true
