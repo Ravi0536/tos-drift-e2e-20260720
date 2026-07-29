@@ -1,0 +1,28 @@
+name: Phase 15 disposable Terraform validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "phase15/e2e/**"
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Terraform format
+        uses: docker://hashicorp/terraform:1.8.5
+        with:
+          args: -chdir=phase15/e2e/s3-sample fmt -check
+      - name: Terraform init
+        uses: docker://hashicorp/terraform:1.8.5
+        with:
+          args: -chdir=phase15/e2e/s3-sample init -backend=false -input=false
+      - name: Terraform validate
+        uses: docker://hashicorp/terraform:1.8.5
+        with:
+          args: -chdir=phase15/e2e/s3-sample validate
