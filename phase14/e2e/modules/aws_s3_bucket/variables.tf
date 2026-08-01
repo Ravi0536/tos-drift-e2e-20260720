@@ -1,29 +1,11 @@
 variable "name" {
-  description = "Name of the aws_s3_bucket this module manages (its \"bucket\" argument). Defaults to the adopted live value."
+  description = "Name of the S3 bucket (the \"bucket\" argument). Defaults to the adopted live value."
   type        = string
-  default     = "tos-dev-artifacts-346589946607"
-}
-
-variable "tags" {
-  description = "Tags applied to the aws_s3_bucket this module manages. Defaults to the adopted live tags."
-  type        = map(string)
-  default = {
-    cost-center = "tos-dev"
-    env         = "dev"
-    managed-by  = "terraform"
-    owner       = "ravindra.kande@gmail.com"
-    service     = "tos"
-  }
-}
-
-variable "versioning_enabled" {
-  description = "Enable object versioning on the bucket managed by this module."
-  type        = bool
-  default     = true
+  default     = "config-bucket-346589946607"
 }
 
 variable "server_side_encryption" {
-  description = "Default server-side encryption rule for the bucket managed by this module. null leaves it unmanaged."
+  description = "Default server-side encryption rule for the bucket. null leaves it unmanaged."
   type = object({
     sse_algorithm      = string
     bucket_key_enabled = optional(bool, false)
@@ -35,7 +17,7 @@ variable "server_side_encryption" {
 }
 
 variable "public_access_block" {
-  description = "Public access block settings for the bucket managed by this module. null leaves it unmanaged."
+  description = "Public access block settings for the bucket. null leaves it unmanaged."
   type = object({
     block_public_acls       = bool
     block_public_policy     = bool
@@ -50,3 +32,8 @@ variable "public_access_block" {
   }
 }
 
+variable "policy_document" {
+  description = "Bucket policy JSON to attach to the bucket. null attaches no policy."
+  type        = string
+  default     = "{\"Statement\":[{\"Action\":\"s3:GetBucketAcl\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"346589946607\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Resource\":\"arn:aws:s3:::config-bucket-346589946607\",\"Sid\":\"AWSConfigBucketPermissionsCheck\"},{\"Action\":\"s3:ListBucket\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"346589946607\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Resource\":\"arn:aws:s3:::config-bucket-346589946607\",\"Sid\":\"AWSConfigBucketExistenceCheck\"},{\"Action\":\"s3:PutObject\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"346589946607\",\"s3:x-amz-acl\":\"bucket-owner-full-control\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Resource\":\"arn:aws:s3:::config-bucket-346589946607/AWSLogs/346589946607/Config/*\",\"Sid\":\"AWSConfigBucketDelivery\"}],\"Version\":\"2012-10-17\"}"
+}

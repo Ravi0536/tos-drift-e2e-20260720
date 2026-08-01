@@ -1,67 +1,44 @@
-terraform {
-  required_version = ">= 1.10.0"
+import {
+  to = module.config_bucket.aws_s3_bucket.this
+  id = "config-bucket-346589946607"
+}
 
-  backend "s3" {
-    bucket       = "tos-dev-tf-state-346589946607"
-    key          = "phase14/e2e/terraform.tfstate"
-    region       = "us-east-1"
-    encrypt      = true
-    use_lockfile = true
+import {
+  to = module.config_bucket.aws_s3_bucket_server_side_encryption_configuration.this[0]
+  id = "config-bucket-346589946607"
+}
+
+import {
+  to = module.config_bucket.aws_s3_bucket_public_access_block.this[0]
+  id = "config-bucket-346589946607"
+}
+
+import {
+  to = module.config_bucket.aws_s3_bucket_policy.this[0]
+  id = "config-bucket-346589946607"
+}
+
+import {
+  to = module.config_bucket.aws_s3_bucket_ownership_controls.this
+  id = "config-bucket-346589946607"
+}
+
+module "config_bucket" {
+  source = "./modules/aws_s3_bucket"
+
+  name = "config-bucket-346589946607"
+
+  server_side_encryption = {
+    bucket_key_enabled = false
+    sse_algorithm      = "AES256"
   }
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
+  public_access_block = {
+    block_public_acls       = true
+    block_public_policy     = true
+    ignore_public_acls      = true
+    restrict_public_buckets = true
   }
-}
 
-provider "aws" {
-  region = "us-east-1"
-
-  default_tags {
-    tags = {
-      Environment = "test"
-      ManagedBy   = "Terraform"
-      Project     = "tos-phase14-e2e"
-      Purpose     = "disposable-phase14-e2e"
-    }
-  }
-}
-
-resource "aws_s3_bucket" "validation" {
-  bucket = "tos-phase14-e2e-346589946607-20260728"
-}
-
-resource "aws_s3_bucket_ownership_controls" "validation" {
-  bucket = aws_s3_bucket.validation.id
-
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "validation" {
-  bucket = aws_s3_bucket.validation.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "validation" {
-  bucket = aws_s3_bucket.validation.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-output "validation_bucket_name" {
-  description = "Name of the disposable Phase 14 validation bucket."
-  value       = aws_s3_bucket.validation.bucket
+  policy_document = "{\"Statement\":[{\"Action\":\"s3:GetBucketAcl\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"346589946607\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Resource\":\"arn:aws:s3:::config-bucket-346589946607\",\"Sid\":\"AWSConfigBucketPermissionsCheck\"},{\"Action\":\"s3:ListBucket\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"346589946607\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Resource\":\"arn:aws:s3:::config-bucket-346589946607\",\"Sid\":\"AWSConfigBucketExistenceCheck\"},{\"Action\":\"s3:PutObject\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"346589946607\",\"s3:x-amz-acl\":\"bucket-owner-full-control\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Resource\":\"arn:aws:s3:::config-bucket-346589946607/AWSLogs/346589946607/Config/*\",\"Sid\":\"AWSConfigBucketDelivery\"}],\"Version\":\"2012-10-17\"}"
 }
